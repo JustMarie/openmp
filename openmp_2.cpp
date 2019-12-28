@@ -38,7 +38,7 @@ int main() {
 				c[i][j] += a[i][k] * b[k][j];
 				int myID = omp_get_thread_num();
 				int threads = omp_get_num_threads();
-				std::cout << "Num of thread in outer min-loop is " << myID << " from " << threads << endl;
+				std::cout << "Num of thread is " << myID << " from " << threads << endl;
 
 			}
 	
