@@ -77,7 +77,6 @@ int main() {
 
 	}
 
-
 	print_matrix(matrix);
 	float min_max = min_max_element(matrix);
 
