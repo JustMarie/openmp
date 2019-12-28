@@ -1,10 +1,8 @@
 
 #include "stdafx.h"
 #include <iostream>
-#include <stdlib.h>
 #include <omp.h>
 #include <ctime>
-#include <algorithm>
 #include  <iomanip>
 
 using namespace std;
@@ -40,18 +38,13 @@ float min_max_element(float mtr[DIM1][DIM2])
 	float max_of_mins = mins[0];
 
 #pragma omp parallel for shared(mins, max_of_mins) 
-	for (int i = 0; i < DIM1; i++) {
+	for (int i = 0; i < DIM1; i++) 
 #pragma omp critical
 		{
 		if (mins[i] > max_of_mins) {
 			max_of_mins = mins[i];
 		}
-		int myID = omp_get_thread_num();
-		int threads = omp_get_num_threads();
-		std::cout << "Num of thread in outer min-loop is " << myID << " from " << threads << endl;
-		}
-	}
-	
+	}	
 
 	return max_of_mins;
 }
@@ -74,13 +67,12 @@ int main() {
 		for (int j = 0; j < DIM2; j++) {
 			matrix[i][j] = rand()%100;
 		}
-
 	}
 
 	print_matrix(matrix);
 	float min_max = min_max_element(matrix);
-
 	cout << endl << "Min_max_element is " << min_max << endl;
+	
 	return 0;
 }
 
