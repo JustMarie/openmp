@@ -26,12 +26,12 @@ float min_max_element(float mtr[DIM1][DIM2])
 					mins[i] = mtr[i][j];
 				int myID = omp_get_thread_num();
 				int threads = omp_get_num_threads();
-				std::cout << "Num of thread in inner min-loop is " << myID << " from " << threads << endl;
+				std::cout << "Num of thread in inner loop is " << myID << " from " << threads << endl;
 			}
 		}
 		int myID = omp_get_thread_num();
 		int threads = omp_get_num_threads();
-		std::cout << "Num of thread in outer min-loop is " << myID << " from " << threads << endl;
+		std::cout << "Num of thread in outer loop is " << myID << " from " << threads << endl;
 
 	}
 
