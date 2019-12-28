@@ -48,5 +48,6 @@ int main() {
 	print_matrix(b);
 	cout << endl << "Matrix C=A*B:" << endl;
 	print_matrix(c);
-
+	
+	return 0;
 }
