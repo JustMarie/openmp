@@ -108,29 +108,43 @@ int main() {
         Init(row_result, 1, N, false);
         Init(column_result, 1, N, false);
         Init(block_result, 1, N, false);
-
+        
+        double start_serial = omp_get_wtime();
         Serial_Calc(Matrix, vect, serial_result);
+        double stop_serial = omp_get_wtime();
+
+        double start_row = omp_get_wtime();
         Row_Calc(Matrix, vect, row_result);
+        double stop_row = omp_get_wtime();
+
+        double start_column = omp_get_wtime();
         Column_Calc(Matrix, vect, column_result);
+        double stop_column = omp_get_wtime();
+
+        double start_block = omp_get_wtime();
         Block_Calc(Matrix, vect, block_result);
+        double stop_block = omp_get_wtime();
 
-        cout  << "Matrix:" << endl;
-        Display_matrix(Matrix, N, N);
+        //cout  << "Matrix:" << endl;
+        //Display_matrix(Matrix, N, N);
 
-        cout << endl << "Vector:" << endl;
-        Display_matrix(vect, 1, N);
+        //cout << endl << "Vector:" << endl;
+        //Display_matrix(vect, 1, N);
 
-        cout << endl << "Serial result:" << endl;
-        Display_matrix(serial_result, 1, N);
+        cout << endl << "Serial result with " << stop_serial-start_serial << " seconds:" << endl;
+        //Display_matrix(serial_result, 1, N);
 
-        cout << endl << "Row result:" << endl;
-        Display_matrix(row_result, 1, N);
+        cout << endl << "Row result with " << stop_row-start_row << " seconds" << endl;
+        //Display_matrix(row_result, 1, N);
 
-        cout << endl << "Column result:" << endl;
-        Display_matrix(column_result, 1, N);
+        cout << endl << "Column result with " << stop_column-start_column << " seconds:" << endl;
+        //Display_matrix(column_result, 1, N);
 
-        cout << endl << "Block result:" << endl;
-        Display_matrix(block_result, 1, N);
+        cout << endl << "Block result with " << stop_block-start_block << " seconds:"  << endl;
+        //Display_matrix(block_result, 1, N);
+
+        cout << "Number of threads: " << omp_get_num_threads() <<  endl;
 
         return 0;
+
 }
