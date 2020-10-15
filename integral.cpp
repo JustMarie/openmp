@@ -24,7 +24,7 @@ int main ()
         sum += f(x);
     }
     I = h * sum;
-    printf("Integral is approximately %.16f”, I);
+    printf("Integral is approximately %.16f", I);
     return 0;
 }
 
