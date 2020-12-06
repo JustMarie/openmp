@@ -9,7 +9,8 @@
 #include <vector> 
 
 using namespace std;
-// Addition and min
+
+// Addition
 void customReduction(std::vector<float> a, int num_threads, int N)
 {
         // vars for atomic
