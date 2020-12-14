@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void dotProduct(std::vector<int> a, std::vector<int> b, int num_threads, int N)
+void dotProduct(double *a,  double *b, int num_threads, int N)
 {
 	double sum_paral_red = 0.0;
 	double sum_paral_atomic = 0.0;
@@ -47,7 +47,7 @@ void dotProduct(std::vector<int> a, std::vector<int> b, int num_threads, int N)
 	endReductionOMP = omp_get_wtime();
 	printf("Reduction: %f seconds\n", endReductionOMP - startReductionOMP);
 
-	// Another approach
+	// Atomic operations
 	startAtomic = omp_get_wtime();
 #pragma omp parallel shared(sum_paral_atomic, a, b) private (i) num_threads(num_threads)
 	{	
@@ -74,9 +74,9 @@ void dotProduct(std::vector<int> a, std::vector<int> b, int num_threads, int N)
 
 	printf("Seq      : %f seconds\n\n", endConseq - startConseq);
 
-	printf("Reduction result : %d\n", sum_paral_red);
-	printf("Atomic add result: %d\n", sum_paral_atomic);
-	printf("Sequence result  : %d\n", sum_seq);
+	printf("Reduction result : %f\n", sum_paral_red);
+	printf("Atomic add result: %f\n", sum_paral_atomic);
+	printf("Sequence result  : %f\n", sum_seq);
 	printf("\n=======================================================\n");
 }
 
@@ -84,17 +84,22 @@ int main(int argc, char** argv)
 {
 	//const int N = atoi(argv[1]);
 	const int N = 1000;
-	vector<int> a(N);
-	vector<int> b(N);
-	
+	double *a = (double*) malloc(N * sizeof(double));
+        double *b = (double*) malloc(N * sizeof(double));
+        int i;
 
-	auto f = []() -> int { return rand() % 10000; };
-	generate(a.begin(), a.end(), f);
-	generate(b.begin(), b.end(), f);
+        for (i = 0; i < N; i++)
+        {
+                a[i] = rand() % 10;
+                b[i] = rand() % 10;
+        }
 
 	dotProduct(a, b, 1, N);
 	dotProduct(a, b, 2, N);
 	dotProduct(a, b, 4, N);
 	dotProduct(a, b, 8, N);
+	dotProduct(a, b, 16, N);
+        dotProduct(a, b, 32, N);
+
 }
 
