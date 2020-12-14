@@ -88,7 +88,7 @@ int main(int argc, char** argv)
          //const int N = atoi( argv[1]);
          const int N = 1000;
 
-        inte *arr = (int*) malloc(N * sizeof(int));
+        int *arr = (int*) malloc(N * sizeof(int));
 
         for (int i = 0; i < N; i++)
                 arr[i] = rand() % 1000;
