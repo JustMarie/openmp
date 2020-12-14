@@ -21,12 +21,15 @@ void customReduction(std::vector<float> a, int num_threads, int N)
         float sum_critical, sum_pr_critical;
         double start_critical, end_critical;
 
-
-
         // vars for locks
         float sum_lock, sum_pr_lock;
         double start_lock, end_lock;
 
+        // vars for build-in reduction
+        float sum_reduction;
+        double start_reduction, end_reduction;
+        
+        
         // vars for sequential execution
         float sum_seq;
         double start_seq, end_seq;
@@ -36,6 +39,7 @@ void customReduction(std::vector<float> a, int num_threads, int N)
         sum_atomic = 0.0f;
         sum_critical = 0.0f;
         sum_lock = 0.0f;
+        sum_reduction = 0.0f;
         sum_seq = 0.0f;
 
         omp_set_dynamic(0);
@@ -102,6 +106,15 @@ void customReduction(std::vector<float> a, int num_threads, int N)
         omp_destroy_lock(&lock);
 
 
+        //Build-in reduction
+        start_reduction = omp_get_wtime();
+#pragma omp parallel for shared(a) private(i) reduction(+: sum_reduction)
+        for (i=0; i < N; i++) {
+                sum_reduction += a[i];
+        }
+        end_reduction = omp_get_wtime();
+
+        
         // Sequential execution
 
         start_seq = omp_get_wtime();
@@ -113,11 +126,13 @@ void customReduction(std::vector<float> a, int num_threads, int N)
         printf("Atomic  : %f seconds\n", end_atomic - start_atomic);
         printf("Critical: %f seconds\n", end_critical - start_critical);
         printf("Locks   : %f seconds\n", end_lock - start_lock);
+        printf("Build-in: %f seconds\n", end_reduction - start_reduction);
         printf("Seq     : %f seconds\n", end_seq - start_seq);
 
         printf("\nAtomic sum  : %f\n", sum_atomic);
         printf("Critical sum: %f\n", sum_critical);
         printf("Lock sum    : %f\n", sum_lock);
+        printf("Build-in sum: %f\n", sum_reduction);
         printf("Seq sum     : %f\n", sum_seq);
 
         printf("\n=======================================================\n");
@@ -125,7 +140,7 @@ void customReduction(std::vector<float> a, int num_threads, int N)
 
 int main(int argc, char** argv)
 {
-        const int N = atoi(argv[1]);
+        const int N = 1000;
         vector<float> a(N);
 
         std::srand(time(0));
@@ -138,4 +153,5 @@ int main(int argc, char** argv)
         customReduction(a, 4, N);
         customReduction(a, 8, N);
         customReduction(a, 16, N);
+        customReduction(a, 32, N);
 }
