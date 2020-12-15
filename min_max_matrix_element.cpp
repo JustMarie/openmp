@@ -1,5 +1,3 @@
-
-#include "stdafx.h"
 #include <iostream>
 #include <omp.h>
 #include <ctime>
@@ -7,72 +5,131 @@
 
 using namespace std;
 
-const unsigned int DIM1 = 3;  // rows number
-const unsigned int DIM2 = 5;  //columns number
+const unsigned int DIM = 100;  // rows number
 
-float min_max_element(float mtr[DIM1][DIM2])
+// Max value in min values of each row
+
+void min_max_element(int **m, int num_threads)
 {
-	float mins[DIM1];
+	int * mins_parall = (int *) malloc(DIM * sizeof(int));
+	int * mins_seq = (int *)malloc(DIM * sizeof(int));
 
-#pragma omp parallel for shared(mins, mtr)
-	for (int i = 0; i < DIM1; i++)
-		mins[i] = mtr[i][0];
+	double start_parall, end_parall;
+	double start_seq, end_seq;
 
-#pragma omp parallel for
-	for (int i = 0; i < DIM1; i++) {
-		for (int j = 0; j < DIM2; j++) {
-#pragma omp critical
-			{	if (mtr[i][j] < mins[i])
-					mins[i] = mtr[i][j];
-				int myID = omp_get_thread_num();
-				int threads = omp_get_num_threads();
-				std::cout << "Num of thread in inner loop is " << myID << " from " << threads << endl;
-			}
-		}
-		int myID = omp_get_thread_num();
-		int threads = omp_get_num_threads();
-		std::cout << "Num of thread in outer loop is " << myID << " from " << threads << endl;
+	int i;
 
+#pragma omp parallel num_threads(num_threads)
+	if (omp_get_thread_num() == 0)
+	{
+		printf("\n\nParallel execution with %d threads and %d elements\n", omp_get_num_threads(), DIM);
 	}
 
-	float max_of_mins = mins[0];
 
-#pragma omp parallel for shared(mins, max_of_mins) 
-	for (int i = 0; i < DIM1; i++) 
+	// Parallel section
+	start_parall = omp_get_wtime();
+#pragma omp parallel for shared(mins_parall, m) private(i) num_threads(num_threads) 
+	for (i = 0; i < DIM; i++)
+		mins_parall[i] = m[i][0];
+
+#pragma omp parallel for shared(mins_parall, m) num_threads(num_threads)
+	for (int i = 0; i < DIM; i++) {
+		for (int j = 0; j < DIM; j++) {
+			if (m[i][j] < mins_parall[i])
 #pragma omp critical
-		{
-		if (mins[i] > max_of_mins) {
-			max_of_mins = mins[i];
+			{
+				if (m[i][j] < mins_parall[i])
+				{
+					mins_parall[i] = m[i][j];
+				}
+				
+			}
 		}
-	}	
+	}
 
-	return max_of_mins;
+	int max_of_mins_parall = mins_parall[0];
+
+#pragma omp parallel for shared(mins_parall, max_of_mins_parall) private(i) num_threads(num_threads)
+	for (i = 0; i < DIM; i++)
+		if (mins_parall[i] > max_of_mins_parall)
+		{
+#pragma omp critical
+			{
+				if (mins_parall[i] > max_of_mins_parall) 
+				{
+					max_of_mins_parall = mins_parall[i];
+				}
+			}
+		}
+	end_parall = omp_get_wtime();
+
+	// Sequential section
+	start_seq = omp_get_wtime();
+	for (i = 0; i < DIM; i++)
+		mins_seq[i] = m[i][0];
+
+	for (int i = 0; i < DIM; i++) {
+		for (int j = 0; j < DIM; j++) {
+			if (m[i][j] < mins_seq[i])
+			{
+				mins_seq[i] = m[i][j];
+
+			}
+		}
+	}
+
+	int max_of_mins_seq = mins_seq[0];
+	for (i = 0; i < DIM; i++)
+		if (mins_seq[i] > max_of_mins_seq)
+		{
+			{
+				max_of_mins_seq = mins_seq[i];
+			}
+		}
+	end_seq = omp_get_wtime();
+
+	printf("Parallel   : %f seconds\n", end_parall - start_parall);
+	printf("Sequential : %f seconds\n", end_seq - start_seq);
+
+	printf("Parallel result   : %d\n", max_of_mins_parall);
+	printf("Sequential result : %d\n", max_of_mins_seq);
+
+	
 }
 
-void print_matrix(float a[DIM1][DIM2]) {
+void print_matrix(int **m) {
 
-	for (int r = 0; r < DIM1; ++r) {
-		for (int c = 0; c < DIM2; ++c)
-			cout << setw(5) << a[r][c] << " ";
+	for (int r = 0; r < DIM; ++r) {
+		for (int c = 0; c < DIM; ++c)
+			cout << setw(5) << m[r][c] << " ";
 		cout << endl;
 	}
 }
 
 int main() {
-	float matrix[DIM1][DIM2];
+
+	int **matrix = (int **)malloc(DIM * sizeof(int *));
+	for (int i = 0; i < DIM; i++)
+		matrix[i] = (int *)malloc(DIM * sizeof(int));
+
 
 	std::srand(unsigned(std::time(0)));
 	//srand(1);
-	for (int i = 0; i < DIM1; i++) {
-		for (int j = 0; j < DIM2; j++) {
-			matrix[i][j] = rand()%100;
+	for (int i = 0; i < DIM; i++) {
+		for (int j = 0; j < DIM; j++) {
+			matrix[i][j] = rand() % 10;
 		}
 	}
 
-	print_matrix(matrix);
-	float min_max = min_max_element(matrix);
-	cout << endl << "Min_max_element is " << min_max << endl;
-	
+	// only for degug
+	// print_matrix(matrix); 
+
+	min_max_element(matrix, 1);
+	min_max_element(matrix, 2);
+	min_max_element(matrix, 4);
+	min_max_element(matrix, 8);
+	min_max_element(matrix, 16);
+	min_max_element(matrix, 32);
+
 	return 0;
 }
-
