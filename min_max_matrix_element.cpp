@@ -34,8 +34,8 @@ void min_max_element(int **m, int num_threads)
 	for (i = 0; i < DIM; i++)
 		mins_parall_crit[i] = m[i][0];
 
-#pragma omp parallel for shared(mins_parall_crit, m) num_threads(num_threads)
-	for (int i = 0; i < DIM; i++) {
+#pragma omp parallel for shared(mins_parall_crit, m) private(i)  num_threads(num_threads)
+	for (i = 0; i < DIM; i++) {
 		for (int j = 0; j < DIM; j++) {
 			if (m[i][j] < mins_parall_crit[i])
 #pragma omp critical
@@ -72,8 +72,9 @@ void min_max_element(int **m, int num_threads)
 	for (i = 0; i < DIM; i++)
 		mins_parall_red[i] = m[i][0];
 
-#pragma omp parallel for shared(mins_parall_red, m) reduction(min: mins_parall_red)  num_threads(num_threads)
-	for (int i = 0; i < DIM; i++) {
+#pragma omp parallel for shared(m) private(i) num_threads(num_threads)
+	for (i = 0; i < DIM; i++) {
+#pragma omp parallel reduction(min: mins_parall_red[i])
 		for (int j = 0; j < DIM; j++) {
 			if (m[i][j] < mins_parall_red[i])
 			{
@@ -84,7 +85,7 @@ void min_max_element(int **m, int num_threads)
 
 	int max_of_mins_parall_red = mins_parall_red[0];
 
-#pragma omp parallel for shared(mins_parall_red, max_of_mins_parall_red) reduction(max: max_of_mins_parall_red)  private(i) num_threads(num_threads)
+#pragma omp parallel for shared(mins_parall_red) reduction(max: max_of_mins_parall_red)  private(i) num_threads(num_threads)
 	for (i = 0; i < DIM; i++)
 		if (mins_parall_red[i] > max_of_mins_parall_red)
 		{
@@ -155,7 +156,7 @@ int main() {
 	}
 
 	// only for degug
-	 print_matrix(matrix); 
+	 //print_matrix(matrix); 
 
 	min_max_element(matrix, 1);
 	min_max_element(matrix, 2);
